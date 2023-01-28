@@ -1,4 +1,5 @@
 #![allow(overflowing_literals)]
+#![allow(unreachable_code)]
 fn main() {
     // 2023年1月27日23时18分20秒
     // Rust_by_example_04,第四章的学习.
@@ -328,7 +329,263 @@ fn main() {
     println!("y is {:?}", y);
     println!("z is {:?}", z);
 
+    // 8.流程控制
+    println!("\n\n=====8.流程控制=====");
+    // 任何编程语言都包含一个必要部分就是改变控制流程，比如 if/else, for等
+
+    // 8.1.if/else
+    println!("\n\n=====8.1.if-else=====");
+    // if-else 分支判断与其它语言不同的是，Rust语言中的布尔判断条件 不必 使用 小括号 包裹
+    // 且每个条件后面 都 跟着一个代码块
+    // if-else 条件选择是一个 表达式，并且所有分支 都 必须 返回相同的类型。
+    let n = 5;
+    if n < 0 {
+        print!("{} is negative", n);
+    } else if n > 0 {
+        print!("{} is positive", n);
+    } else {
+        print!("{} is zero", n);
+    }
+    let big_n = 
+        if n < 10 && n > -10 {
+            println!(", and is a small number, inrease ten-fold");
+            // 这个表达式返回一个 `i32` 类型
+            10 * n
+        } else {
+            println!(", and is a big number, half the number");
+            // 这个表达式也必须返回一个 `i32` 类型
+            n / 2
+        };
+    println!("{} -> {}", n, big_n);
     
+    // 8.2.loop循环
+    println!("\n\n=====8.2.loop循环=====");
+    // 可以使用 break 语句在任何时候退出一个循环
+    // 也可以使用 continue 跳过循环体的剩余部分并开始下一轮循环
+    let mut count = 0_u32;
+    println!("Let's count until infinity!");
+    // 无限循环
+    loop {
+        count += 1;
+        if count == 3 {
+            println!("three");
+            continue;
+        }
+        println!("计数：{}", count);
+        if count == 5 {
+            println!("Ok, that's enough!");
+            break;
+        }
+    }
+
+    // 8.2.1.嵌套循环和标签
+    println!("\n\n=====8.2.1.嵌套循环和标签=====");
+    // 处理嵌套循环的时候可以 break 或 continue 外层循环
+    // 在这种情况下，循环必须用 `label（标签）来注明，并且标签必须传递给 break/continue 语句
+    'outer: loop {
+        println!("Entered the outer loop");
+        'inner: loop {
+            println!("Entered the inner loop");
+            // 这只是中断内部的循环
+            // break;
+            // 这会中断外部的循环
+            break 'outer;
+        }
+        println!("This point will never be reached");
+    }
+    println!("Exited the oute loop");
+    
+    // 8.2.2.从loop循环中返回
+    println!("\n\n=====8.2.2.从loop循环中返回=====");
+    // loop有个用途是尝试一个操作直到成功为上
+    //      若操作返回一个值，则 可能需要将其传递给代码的其余部分
+    //      将该放在 break 之后，它就会被 loop 表达式返回
+    let mut counter = 0;
+    let result = loop {
+        counter += 1;
+        if counter == 10 {
+            // 这种情况还是我第一次见到，这个好玩。哈哈，2023年1月28日21时15分2秒
+            break counter * 2;
+        }
+    };
+    assert_eq!(result, 20);
+
+    // 8.3.while循环
+    println!("\n\n=====8.3.while循环=====");
+    // 用 while 写一下臭名昭著的 FizzBuzz ，https://leetcode-cn.com/problems/fizz-buzz/
+    // 下面是这个问题的描述：
+    // 给你一个整数 n ，找出从 1 到 n 各个整数的 Fizz Buzz 表示，并用字符串数组 answer（下标从 1 开始）返回结果，其中：
+    //     answer[i] == "FizzBuzz" 如果 i 同时是 3 和 5 的倍数。
+    //     answer[i] == "Fizz" 如果 i 是 3 的倍数。
+    //     answer[i] == "Buzz" 如果 i 是 5 的倍数。
+    //     answer[i] == i （以字符串形式）如果上述条件全不满足。
+    // 如果理解了题意，不难，但理解不了。2023年1月28日21时23分31秒
+    let mut n = 1;
+    let counter = 25;
+    while n < counter {
+        if n % 15 == 0 {
+            print!("fizzbuzz");
+        } else if n % 3 == 0 {
+            print!("fizz");
+        } else if n % 5 == 0 {
+            print!("buzz");
+        } else {
+            print!("{}", n);
+        }
+        n += 1;
+        if n < counter {
+            print!(",");
+        } else {
+            println!();
+        }
+    }
+    
+    // 8.4.for循环
+    println!("\n\n=====8.4.for循环=====");
+    // for 与 区间
+    // for in 结构可以遍历一个 Iterator（迭代器）
+    //      创建迭代器的一个最简单方法是使用区间标记 a..b ，
+    //      这会生成一个从 a（包含此值） 到  b（不含此值）的，步长为1的一系列值
+    // 重写一下 FizzBuzz 程序
+    let counter = 25;
+    for n in 1..counter {
+        if n % 15 == 0 {
+            print!("fizzbuzz");
+        } else if n % 3 == 0 {
+            print!("fizz");
+        } else if n % 5 == 0 {
+            print!("buzz");
+        } else {
+            print!("{}", n);
+        }
+        // 这里要注意一下，终止的条件如何 ， 2023年1月28日21时39分5秒
+        if n < counter - 1 {
+            print!(",");
+        } else {
+            println!();
+        }
+    }
+   
+    // for与迭代器
+    // for in 结构能以几种方式与 Iterator 互动，
+    // 如果没有特殊指定，for 循环会对给出的集合应用 into_iter 函数，把它转换成一个迭代器
+    // 转换成迭代器的方法还有 iter 和 iter_mut 函数
+    // 这三个函数会以不同的 方式 返回集合中的数据
+    //      iter - 在每次迭代中借用集合中的一个元素，这样集合本身不会被改变，循环之后仍可以使用
+    let names = vec!["Bob", "Frank", "Ferris"];
+    for name in names.iter() {
+        match name {
+            &"Ferris" => println!("There is a rustacean among us!"),
+            _ => println!("Hello {}", name),
+        }
+    }
+    println!("iter() 其内部的内容不会被改变，names: {:?}\n", names);
+    
+    //      into_iter - 会消耗集合。在每次迭代中，集中的数据本身会被提供，一旦集合被消耗了，
+    //                  之后无法再使用了，因为它已经在循环中被 ”移除”(move) 了。
+    let names = vec!["Bob", "Frank", "Ferris"];
+    for name in names.into_iter() {
+        match name {
+            "Ferris" => println!("There is a rustacean among us!"),
+            _ => println!("Hello {}", name),
+        }
+    }
+    // 这里编译会出错，因为已经被 move 了！！2023年1月28日23时1分51秒
+    println!("into_iter()将无法再访问数组内容，因为被移除了！！\n");
+    
+    //      iter_mut - 可变地(mutably) 借用集合中的每个元素，从而允许集合被就地修改
+    let mut names = vec!["Bob", "Frank", "Ferris"];
+    for name in names.iter_mut() {
+        *name = match name {
+            &mut "Ferris" => "There is a rustacean among us!",
+            _ => {
+                "Hello"
+            },
+        }
+    }
+    // 我想把数组的内容更改为 “Hello {name}”,怎么实现？ 2023年1月28日23时14分20秒
+    println!("iter_mut() 其内容可以被改变，names: {:?}", names);
+
+    // 8.5.match匹配
+    println!("\n\n=====8.5.match匹配=====");
+    // Rust 通过 match 关键字提供模式匹配
+    // 第一个匹配分支会被比对，并且所有可能的值都必须被覆盖
+    let number = 123;
+    println!("Tell me about {}", number);
+    match number {
+        1 => println!("One!"),
+        2 | 3 | 5 | 7 | 11 | 23 => println!("This is a prime"),
+        13..=19 => println!("A teen"),
+        _ => println!("Ain't special"),
+    }
+    let boolean = true;
+    let binary = match boolean {
+        // match 必须覆盖所有可能的值
+        false => 0,
+        true => 1,
+    };
+    println!("{} -> {}", boolean, binary);
+
+    // 8.5.1.解构
+    println!("\n\n=====8.5.1.解构=====");
+
+    // 8.5.1.1.解构元组
+    println!("\n\n=====8.5.1.1.解构元组=====");
+    let triple = (3, -2, 3);
+    println!("Tell me about {:?}", triple);
+    match triple {
+        (0, y, z) => println!("First is '0', 'y' is {:?}, and 'z' is {:?}", y, z),
+        (1, ..) => println!("First is '1' and the rest doesn't matter"),        // .. 用来表示元组的其他部分
+        _ => println!("It doesn't matter what they are"),
+    }
+    
+    // 8.5.1.2.解构枚举
+    println!("\n\n=====8.5.1.2.解构枚举=====");
+    #[allow(dead_code)]
+    enum Color {
+        Red,
+        Blue,
+        Green,
+        RGB(u32, u32, u32),
+        HSV(u32, u32, u32),
+        HSL(u32, u32, u32),
+        CMY(u32, u32, u32),
+        CMYK(u32, u32, u32, u32),
+    }
+    let color = Color::RGB(122, 17, 40);
+    println!("What color is it?");
+    match color {
+        Color::Red => println!("红色"),
+        Color::Blue => println!("蓝色"),
+        Color::Green => println!("绿色"),
+        Color::RGB(r, g, b) => println!("Red: {}, green: {}, Blue: {}", r, g, b),
+        Color::HSV(h, s, v) => println!("Hue: {}, saturation: {}, value: {}", h, s, v),
+        Color::HSL(h, s, l) => println!("Hue: {}, saturation: {}, lightness: {}", h, s, l),
+        Color::CMY(c, m, y) => println!("Cyan: {}, magenta: {}, yellow: {}", c, m, y),
+        Color::CMYK(c, m, y, k) => println!("Cyan: {}, magenta: {}, yellow: {}, key(black): {}", c, m, y, k),
+
+    }
+    
+    // 8.5.1.3.指针和引用
+    println!("\n\n=====8.5.1.3.指针和引用=====");
+    // 对指针而言，解构(destructure) 与 解引用(dereference) 要区分开
+    // 解引用 *
+    // 解构 & ref 及 ref mut
+
+    // 获得一个 ‘i32’ 类型的引用， & 表示解引用
+    let reference = &4;
+    match reference {
+        // 如果用 '&val' 这个模式去匹配 'reference'，相当于做这样的比较：
+        // '&i32'，即 'reference' 的类型
+        // '&val'，即用于匹配的模式
+        //  ^ 如果去掉匹配的 '&' ，'i32'应该赋给 'val'
+        // 因此可用 'val' 表示被 'refrence' 引用的值 4
+        &val => println!("Got a value via destructuring: {:?}", val),
+    }
+    // 如果不想用'&'，需要在匹配前解引用
+    match *reference {
+        val => println!("Got a value via dereference: {:?}",val),
+    }
     
     
 }
