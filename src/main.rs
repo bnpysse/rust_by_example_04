@@ -243,8 +243,8 @@ fn main() {
     // 类似于 From 和 Into，TryFrom和TryInto是类型转换的通用trait
     // 不同于 From/Into 的是，TryFrom 和 TryInto trait用于易出错的
     // 转换，也正因为如此，其返回值是 Result 型。
-    use std::convert::TryFrom;
-    use std::convert::TryInto;
+    // use std::convert::TryFrom;
+    // use std::convert::TryInto;
     #[derive(Debug, PartialEq)]
     struct EvenNumber(i32);
     impl TryFrom<i32> for EvenNumber {
@@ -266,6 +266,68 @@ fn main() {
     assert_eq!(result, Ok(EvenNumber(8)));
     let result: Result<EvenNumber, ()> = 5_i32.try_into();
     assert_eq!(result, Err(()));
+
+    // 6.3.ToString和FromStr
+    println!("\n\n=====6.3.ToString和FromStr=====");
+    // 要把任何类型转换成为 String ,只需要实现那个类型的 ToString trait。然而
+    // 不要直接这么做，您应该实现 fmt::Display trait，它会自动提供 ToString，
+    // 并且还可以用来打印类型，就像 print! 那样。
+    use std::fmt;
+    struct Circle {
+        redius: i32
+    }
+    impl fmt::Display for Circle {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "Circle of radius {}", self.redius)
+        }
+    }
+    let circle = Circle{ redius: 6 };
+    println!("Circle to string is: {}", circle.to_string());
+
+    // // 另外一个实现 ToString 的例子
+    // // use std::string::ToString;
+    // impl ToString for Circle {
+    //     fn to_string(&self) -> String {
+    //         format!("圆的半径是：{:?}", self.redius)
+    //     }
+    // }
+    // println!("{}", circle.to_string());
+    // 编译出错！！！ 2023年1月28日19时43分24秒
+
+    // 解析字符串
+    // 经常需要把字符串转成数字，通过用 parse 函数
+    // 通常得提供要转换到的类型，这可以通过不使用类型推断，或者用“涡轮鱼”语法;(turbo fish, <>)实现
+    // 只要对目标类型实现了 FromStr trait，就可以用 parse 把字符串转换成目标类型，
+    // 标准库实现了无数种类型的 FromStr。如果要转换到用户自定义类型，只要手动实现 FromStr 即可
+    let parsed: i32 = "5".parse().unwrap();
+    let turbo_parsed = "10".parse::<i32>().unwrap();
+    let sum = parsed + turbo_parsed;
+    println!("the Sum: {:?}", sum);
+
+    // 7.表达式
+    println!("\n\n=====7.表达式=====");
+    // Rust 程序（大部分）由一系列语句构成：
+    // Rust 有多种语句，最普通的语句类型有两种：
+    //      一种是声明绑定变量
+    //      一种是表达式带上英文分号
+    // 代码块也是表达式，所以它们可以用途赋值中的值
+    //      代码块中的最后一个表达式将赋给适当的表达式，例如：局部变量
+    //      但是，如果代码块的最后一个表达式结尾处有分号，则返回值为（）
+    let x = 5_u32;
+    let y = {
+        let x_squared = x * x;
+        let x_cube = x_squared * x;
+        // 将下列表达式赋给了 `y`
+        x_cube + x_squared + x
+    };
+    let z = {
+        // 分号结束了这个表达式，于是将 `()` 赋给了 `z`
+        2 * x;
+    };
+    println!("x is {:?}", x);
+    println!("y is {:?}", y);
+    println!("z is {:?}", z);
+
     
     
     
