@@ -587,5 +587,77 @@ fn main() {
         val => println!("Got a value via dereference: {:?}",val),
     }
     
+    // 如果一开始就不用引用，会怎样？
+    // 'reference'是一个 '&' 类型，因为赋值语句的右边已经是一个引用，但下面这个不是引用，因为右边不是
+    let _not_a_reference = 3;
+
+    // Rust 对这种情况提供了 'ref'。它更改了赋值行为，从而可以对具体值创建引用。
+    // 下面这行将得到一个引用 
+    let ref _is_a_reference = 3;
+
+    // 相应的，定义两个非引用的变量，通过 'ref' 和 'ref mut' 仍可取得其引用。
+    let value = 5;
+    let mut mut_value = 9;
+
+    // 使用 'ref' 关键字来创建引用。
+    // 下面的 r 是 'i32' 类型，它像 'i32' 一样可以直接打印，因此用法上似乎看不出什么区别。
+    // 但可以把 'println!' 中的 'r' 改成 '*r' ，仍然能正常运行
+    // 而前面的例子中的 'println!' 时就 不能 是 '*val'，因为不能对整数进行解引用
+    match value {
+        ref r => println!("Got a reference to a value: {:?}", r),
+    } 
+    // 类似地使用 'ref mut'。
+    match mut_value {
+        ref mut m => {
+            // 已经获得 'mut_value' 的引用，先要解引用，才能改变它的值。
+            * m += 10;
+            println!("We add 10. 'mut_value' is: {:?}", m);
+        },
+    }
+    
+    // 8.5.1.4.结构体
+    println!("\n\n=====8.5.1.4.结构体=====");
+    // 解构 struct
+    struct Foo { x: (u32, u32), y: u32 }
+    // 解构结构体的成员
+    let foo = Foo { x: (1, 2), y: 3 };
+    let Foo { x: (a, b), y } = foo;
+    println!("a = {}, b = {}, y = {}", a, b, y);
+    // 解构结构体并重命名变量，成员顺序并不重要 
+    let Foo { y: i, x: j } = foo;
+    println!("i = {:?}, j = {:?}", i, j);
+    // 也可以忽略某些变量
+    let Foo { y, .. } = foo;
+    println!("y = {}, 其它变量忽略了。", y);
+
+    // 8.5.2.卫语句
+    println!("\n\n=====8.5.2.卫语句=====");
+    // '卫'即保卫的意思，guard
+    let pair = (2, -2);
+    println!("Tell me about {:?}", pair);
+    match pair {
+        (x, y) if x == y => println!("These are twins"),
+        (x, y) if x + y == 0 => println!("Antimatter, kaboom!"),
+        (x, _) if x % 2 == 1 => println!("The first one is odd"),
+        _ => println!("No correlation.."),
+    }
+    
+    // 8.5.3.绑定
+    println!("\n\n=====8.5.3.绑定=====");
+    // 在 match 中，若间接地访问一个变量，则 不经过重新绑定就无法在分支中再使用它
+    // match 提供了 @ 符号来绑定变量到名称
+    fn age() -> u32 {
+        15
+    }
+    println!("Tell me what type of person you are");
+    match age() {
+        0 => println!("I haven't celebrated my first birthday yet"),
+        n @ 1 ..=12 => println!("I'm a child of age {:?}", n),
+        n @ 13 ..=19 => println!("I'm a teen of age {:?}", n),
+        n => println!("I'm anold person of age {:?}", n),
+    }
+    
+    
+    
     
 }
