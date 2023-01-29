@@ -888,7 +888,7 @@ fn main() {
     //      有能力捕获外部环境的变量
     // 
     // 通过闭包和函数分别实现自增，这个是函数实现
-    fn function(i: i32) -> { i + 1 }
+    fn function(i: i32) -> i32 { i + 1 }
     // 闭包匿名的，这里我们将其绑定到引用。
     // 类型标注和函数的一样，不过类型标准和使用 '{}' 来围住函数体是可选的
     // 这些匿名函数(nameless function)被赋值赋值给合适的命名的变量
@@ -907,6 +907,34 @@ fn main() {
     let one = || 1;
     println!("closure returning one: {}", one());
 
+    // 9.2.1.捕获
+    println!("\n\n=====9.2.1.捕获=====");
+    // 闭包本质上很灵活，能做功能要求的事情，使闭包在没有类型标注的情况下运行。
+    // 这使得捕获 (capture) 能够灵活地适应用例，既可移动 (move) ，又可借用 (borrow) 
+    // 闭包可以通过以下方式捕获变量：
+    //      通过引用： &T
+    //      通过可变引用： &mut T
+    //      通过值： T
+    // 闭包优先通过引用来捕获变量，并且仅在需要时使用其他方式！！！
+    use std::mem;
+    let color = String::from("green");
+    // 下面的闭包会打印 'color'，它会立即借用(通过引用，'&')'color'并将该借用和闭包本身
+    // 存储到 'print' 变量中。
+    // color 会一直保持被借用状态直到 'print' 离开作用域。
+    let print = || println!("color is: {}", color);
+    // 使用借用来调用闭包 'color'
+    print();
+    // 'color' 可再次被不可变借用，因为闭包只持有一个指向 'color' 的不可变引用。
+    let _reborrow = &color;
+    print();
+
+    // 在最后使用 'print' 之后，移动或重新借用都是允许的
+    let _color_moved = color;
+
+    let mut count = 0;
+    //    ta 
+    
+    
 
 
 }
