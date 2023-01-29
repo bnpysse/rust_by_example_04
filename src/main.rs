@@ -656,8 +656,225 @@ fn main() {
         n @ 13 ..=19 => println!("I'm a teen of age {:?}", n),
         n => println!("I'm anold person of age {:?}", n),
     }
+    // 也可以使用绑定来解构 enum 变体
+    fn some_number() -> Option<u32> {
+        Some(11)
+    }
+    match some_number() {
+        // 获取 'Some' 可变类型，如果它的值(绑定到'n'上面)等于 42 ，则 匹配
+        Some(n @ 42) => println!("The Answer is: {}", n),
+        Some(n) => println!("Not interesting...{}", n),
+        _ => println!("缺少值？？？")
+    }
+
+    // 8.6.if let
+    println!("\n\n=====8.6.if let=====");
+    // match 用到赋值语句中去
+    let optional = Some(7);
+    match optional {
+        // 这里是从 optional 中解构出 'i'
+        Some(i) => println!("This is a really long string and '{:?}'", i),
+        // 这行是必须要有的，因为 'match' 需要覆盖全部情况
+        _ => {}, 
+    }
+    // 如果用 if let 处理上面的情况，则会简洁得多，并且允许指明数种失败情况下的选项
+    // 全部都是 'Option<i32>' 类型
+    let number = Some(7);
+    let letter: Option<i32> = None;
+    let emoticon: Option<i32> = None;
+
+    // if let 结构读作： 若 'let' 将 'number' 解构成 'Some(i)' 则执行语句块（'{}'）
+    if let Some(i) = number {
+        println!("Matched {:?}", i);
+    };
+    // 如果要指明失败情况，就使用 else
+    if let Some(i) = letter {
+        println!("Matched {:?}", i);
+    } else {
+        // 解构失败
+        println!("Didn't match a number. Let's go with a letter!");
+    };
+    // 提供另一种失败情况下的条件
+    let i_like_letters = false;
+    if let Some(i) = emoticon {
+        println!("Matched {:?}", i);
+    } else if i_like_letters {
+        println!("Didn't match a number. Let's go with a letter!");
+    } else {
+        // 条件的值为 false ，于是以下是默认的分支
+        println!("I don't like letters. Let's go with an emoticon :)!");
+    };
+
+    // 同样，可以用if let 匹配任何枚举值
+    enum MyFoo {
+        Bar,
+        Baz,
+        Qux(u32)
+    }
+   
+    let a = MyFoo::Bar;
+    let b = MyFoo::Baz;
+    let c = MyFoo::Qux(100);
+    if let MyFoo::Bar = a {
+        println!("a is foobar");
+    }
+    if let MyFoo::Bar = b {
+        println!("b is foobar");
+    }
+    if let MyFoo::Qux(value) = c {
+        println!("c is {}", value);
+    }
+    // 另一个好处是，if let 允许匹配枚举非参数化的变量，即枚举未注明 #[derive(PartialEq)]，也
+    // 没有为其实现 PartialEq。在这种情况下，通常  if Foo::Bar==a 会出错，因为此类枚举的实例
+    // 不具有可比性，而 if let 是可行的 
     
     
+    // 8.7.while let
+    println!("\n\n=====8.7.while let=====");
+    // 和 if let 类似，while let 也可以把别扭的 match 改写得好看一些
+    // 将 'optional' 设为 'Option<i32>' 类型
+    let mut optional = Some(0);
+    loop {
+        match optional {
+            Some(i) => {
+                if i > 9 {
+                    println!("Greater than 9, quit!");
+                    optional = None;
+                } else {
+                    println!("'i' is '{:?}'. Try again.", i);
+                    optional = Some(i + 1);
+                }
+            },
+            _ => { break; }
+        }
+    }
+    // 下面用 while let 改写
+    let mut optional = Some(0);
+    while let Some(i) = optional {
+        if i > 9 {
+            println!("Greater than 9, quit!");
+            optional = None;
+        } else {
+            println!("'i' is '{:?}'. Try again!", i);
+            optional = Some(i + 1);
+        }
+        // 使用的缩进更少，并且不用显式处理失败情况
+    }
     
+    // 9.函数
+    println!("\n\n=====9.函数=====");
+    // 又重写 FizzBuzz，呵呵
+    fn is_divisible_by(lhs: u32, rhs: u32) -> bool {
+        if rhs == 0 {
+            return false;
+        }
+        lhs % rhs ==0
+    }
+    fn fizzbuzz(n: u32)  -> () {
+        if is_divisible_by(n, 15) {
+            print!("fizzbuzz");
+        } else if is_divisible_by(n, 3) {
+            print!("fizz");
+        } else if is_divisible_by(n, 5) {
+            print!("buzz");
+        } else {
+            print!("{}", n);
+        }
+    }
+    fn fizzbuzz_to(n: u32) {
+        for i in 1..n {
+            fizzbuzz(i);
+            if i < n - 1{
+                print!(",");
+            } else {
+                println!();
+            }
+        }
+    }
+    fizzbuzz_to(25);
+    
+    // 9.1.方法
+    println!("\n\n=====9.1.方法=====");
+    // 方法(method)是依附于对象的函数，这些方法通过关键字 self 来访问对象中的数据和其他
+    // 方法在 impl 代码块中定义
+    struct Point {
+        x: f64,
+        y: f64,
+    }
+    // 实现的代码码，'Point' 的所有方法都在这里给出
+    impl Point {
+        // 静态方法，static method，不需要被实例调用，一般用作构造器(constructor)
+        fn origin() -> Point {
+            Point { x:0.0, y:0.0 }
+        }
+        // 另一个静态方法
+        fn new(x: f64, y: f64) -> Point {
+            Point { x:x, y:y }
+        }
+    }
+    struct Rectangle {
+        p1: Point,
+        p2: Point,
+    }
+    impl Rectangle {
+        // 实例方法（instance method），
+        // '&self' 是 'self:&Self' 的语法粮(sugar) 
+        // 其中'Self'是方法调用者的类型
+        fn area(&self) -> f64 {
+            let Point { x: x1, y: y1 } = self.p1;
+            let Point { x: x2, y: y2 } = self.p2;
+            ((x1 - x2) * (y1 - y2)).abs()
+        }
+        fn perimeter(&self) -> f64 {
+            let Point { x: x1, y: y1 } = self.p1;
+            let Point { x: x2, y: y2 } = self.p2;
+            2.0 * ((x1 - x2).abs() * (y1 - y2).abs())
+        }
+        // 这个方法要求调用者是可变的
+        // '&mut self' 为 ;'self: &mut Self' 的语法糖
+        fn translate(&mut self, x: f64, y: f64) {
+            self.p1.x += x;
+            self.p2.x += x;
+            self.p1.y += y;
+            self.p2.y += y;
+        }
+    }
+    // 'Pair' 拥有资源：两个堆分配的整形
+    struct Pair(Box<i32>, Box<i32>);
+
+    impl Pair {
+        // 此方法会'消耗'调用者的资源
+        // 'self' 为 'self: Self' 的语法糖
+        fn destroy(self) {
+            // 解构 'self'
+            let Pair(first, second) = self;
+            println!("Destorying Pair({}, {})", first, second);
+            // 'first' 和 'second' 离开作用域后释放
+        }
+    }
+   
+    let rectangle = Rectangle {
+        // 注意：静态方法要使用双冒号调用
+        p1: Point::origin(),
+        p2: Point::new(3.0, 4.0),
+    };
+    // 实例方法通过点运算符来调用 
+    // 第一个参数 '&self' 是隐式传递的，亦即：
+    // 'rectangle.perimeter()' == 'Rectangle::perimeter(&rectangle)'
+    println!("Rectangle perimeter: {}", rectangle.perimeter());
+    println!("Rectangle area: {}", rectangle.area());
+
+    let mut square = Rectangle {
+        p1: Point::origin(),
+        p2: Point::new(1.0, 1.0),
+    };
+    // rectangle.translate(1.0, 1.1);
+    square.translate(1.0, 1.0);
+
+    let pair = Pair(Box::new(1), Box::new(2));
+    pair.destroy();
+    
+    // 9.2.闭包
+    println!("\n\n=====9.2.闭包=====");
     
 }
