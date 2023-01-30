@@ -760,8 +760,8 @@ fn main() {
         }
         // 使用的缩进更少，并且不用显式处理失败情况
     }
-    
-    // 9.函数
+
+    //region 9.函数
     println!("\n\n=====9.函数=====");
     // 又重写 FizzBuzz，呵呵
     fn is_divisible_by(lhs: u32, rhs: u32) -> bool {
@@ -792,8 +792,9 @@ fn main() {
         }
     }
     fizzbuzz_to(25);
+    //endregion
     
-    // 9.1.方法
+    //region 9.1.方法
     println!("\n\n=====9.1.方法=====");
     // 方法(method)是依附于对象的函数，这些方法通过关键字 self 来访问对象中的数据和其他
     // 方法在 impl 代码块中定义
@@ -873,8 +874,9 @@ fn main() {
 
     let pair = Pair(Box::new(1), Box::new(2));
     pair.destroy();
-    
-    // 9.2.闭包
+    //endregion
+
+    //region 9.2.闭包
     println!("\n\n=====9.2.闭包=====");
     // Rust 中的闭包(closure)，也称之为lambda表达式或者 lambda，是一类
     // 能够捕获周围作用域中变量的函数。例如，一个可以捕获 x 变量的闭包如下：
@@ -906,7 +908,9 @@ fn main() {
     // 返回类型是自动推导的
     let one = || 1;
     println!("closure returning one: {}", one());
+    //endregion
 
+    //region 9.2.1.捕获
     // 9.2.1.捕获
     println!("\n\n=====9.2.1.捕获=====");
     // 闭包本质上很灵活，能做功能要求的事情，使闭包在没有类型标注的情况下运行。
@@ -968,10 +972,58 @@ fn main() {
     let contains = move |needle| haystack.contains(needle);
     println!("{}", contains(&1));
     println!("{}", contains(&4));
+    //endregion
 
+    //region 9.2.2.作为输入参数
     // 9.2.2.作为输入参数
     println!("\n\n=====9.2.2.作为输入参数=====");
+    // 虽然 Rust 无需类型说明就能在大多数时候完成变量捕获，但在写函数时，这种模糊写法是不的。
+    // 当以闭包作为输入参数时，必须指出闭包的完整类型，它是通过使用以下 trait 中的一种来指定的。
+    // 其受限程序按以下顺序递减：
+    // Fn : 表示捕获方式为通过引用(&T)的闭包
+    // FnMut : 表示捕获方式为通过可变引用 (&mut T) 的闭包
+    // FnOnce ： 表示捕获的方式为通过值 (T) 的闭包
+    // 顺序之所以是这样的，是因为 &T 只是获取了不可变的引用，&mut T 则可以改变变量，T 则是拿到了
+    // 变量的所有权而非借用。
+    // 对闭包所要捕获的每个变量，编译器都将以限制最少的方式来捕获。
+    // 例如用一个类型说明为 FnOnce 的闭包作为参数。
+    // 这说明闭包可能采取 &T，&mut T 或 T 捕获变量。
 
+    // 该函数将闭包作为参数并调用它
+    fn apply<F>(f: F) where
+        F: FnOnce() {
+        f();
+    }
+    // 输入闭包，返回一个 'i32' 整形的函数。
+    fn apply_to_3<F>(f: F) -> i32 where
+        F: Fn(i32) -> i32 {
+        f(3)
+    }
+    let greeting = "hello";
+
+    // 不可复制类型，'to_owned' 从的数据创建 有所有权的数据。
+    let mut farewell = "goodbye".to_owned();
+
+    // 捕获两个变量：通过引用捕获 'greeting'，通过值捕获 'farewell'。
+    let diary = || {
+        println!("I said {}.", greeting);
+
+        // 下文改变了 'farewell'， 因而要求闭包通过可变引用来捕获它。
+        // 现在需要 'FnMut'。
+        farewell.push_str("!!!");
+        println!("Then I screamed {}.", farewell);
+        println!("Now I can sleep. zzzz");
+        mem::drop(farewell);
+    };
+    // 以闭包作为参数，调用函数 'apply'。
+    apply(diary);
+
+    // 闭包 'double' 满足 'apply_to_3' 的 trait 约束。
+    let double = |x| 2 * x;
+    //endregion9.2.2.作为输入参数
+
+    // 9.2.3.类型匿名
+    println!("\n\n=====9.2.3.类型匿名=====");
 
 
 
