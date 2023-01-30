@@ -615,7 +615,7 @@ fn main() {
         },
     }
     
-    // 8.5.1.4.结构体
+    //region 8.5.1.4.结构体
     println!("\n\n=====8.5.1.4.结构体=====");
     // 解构 struct
     struct Foo { x: (u32, u32), y: u32 }
@@ -641,8 +641,9 @@ fn main() {
         (x, _) if x % 2 == 1 => println!("The first one is odd"),
         _ => println!("No correlation.."),
     }
+    //endregion
     
-    // 8.5.3.绑定
+    //region 8.5.3.绑定
     println!("\n\n=====8.5.3.绑定=====");
     // 在 match 中，若间接地访问一个变量，则 不经过重新绑定就无法在分支中再使用它
     // match 提供了 @ 符号来绑定变量到名称
@@ -666,8 +667,9 @@ fn main() {
         Some(n) => println!("Not interesting...{}", n),
         _ => println!("缺少值？？？")
     }
+    //endregion
 
-    // 8.6.if let
+    //region 8.6.if let
     println!("\n\n=====8.6.if let=====");
     // match 用到赋值语句中去
     let optional = Some(7);
@@ -726,10 +728,10 @@ fn main() {
     }
     // 另一个好处是，if let 允许匹配枚举非参数化的变量，即枚举未注明 #[derive(PartialEq)]，也
     // 没有为其实现 PartialEq。在这种情况下，通常  if Foo::Bar==a 会出错，因为此类枚举的实例
-    // 不具有可比性，而 if let 是可行的 
-    
-    
-    // 8.7.while let
+    // 不具有可比性，而 if let 是可行的
+    //endregion
+
+    //region 8.7.while let
     println!("\n\n=====8.7.while let=====");
     // 和 if let 类似，while let 也可以把别扭的 match 改写得好看一些
     // 将 'optional' 设为 'Option<i32>' 类型
@@ -758,8 +760,9 @@ fn main() {
             println!("'i' is '{:?}'. Try again!", i);
             optional = Some(i + 1);
         }
-        // 使用的缩进更少，并且不用显式处理失败情况
+       // 使用的缩进更少，并且不用显式处理失败情况
     }
+    //endregion
 
     //region 9.函数
     println!("\n\n=====9.函数=====");
@@ -1005,7 +1008,8 @@ fn main() {
     let mut farewell = "goodbye".to_owned();
 
     // 捕获两个变量：通过引用捕获 'greeting'，通过值捕获 'farewell'。
-    let diary = || {
+    let diary= || {
+        // 'greeting' 通过引用捕获，因为要求闭包通过可变引用来捕获它。
         println!("I said {}.", greeting);
 
         // 下文改变了 'farewell'， 因而要求闭包通过可变引用来捕获它。
@@ -1019,13 +1023,184 @@ fn main() {
     apply(diary);
 
     // 闭包 'double' 满足 'apply_to_3' 的 trait 约束。
-    let double = |x| 2 * x;
+    let double = |x: i32| 2 * x;
+    println!("3 doubled: {}", apply_to_3(double));
     //endregion9.2.2.作为输入参数
 
-    // 9.2.3.类型匿名
+    //region 9.2.3.类型匿名
     println!("\n\n=====9.2.3.类型匿名=====");
+    // 闭包从周围的作用域中捕获变量是简单明了。
+    // 观察一下使用闭包作为函数参数，这要求闭包是泛型的，定义的方式决定了这是必要的。
+    // 当闭包被定义，编译器会隐式地创建一个匿名类型的结构体，用以储存捕获的变量，同时
+    // 为这个未知类型的结构体实现函数功能，通过 Fn/FnMut/FnOnce 三种 trait 中的一种
+    // 若使用闭包作为函数参数，由于这个棱柱体的类型未知，任何的用法都要求是泛型的
+    // 然而，使用未限定类型的参数 <T> 过于不明确，并且是不允许的。
+    // 事实上，指明为该结构体实现的是 Fn/FnMut/FnOnce 中的哪种 trait，对于
+    // 约束该结构体的类型而言已经足够了。
+    // 'F' 必须 为一个没有输入参数和返回值的闭包实现 'Fn'
+    // 这和对 'print' 的要求恰好是一样的。 2023年1月30日21时4分32秒
+    fn my_apply<F>(f: F) where
+        F: Fn() {
+        f();
+    }
+    let x = 7;
+    // 捕获 'x' 到匿名类中，并为它实现 'Fn'。将闭包存储到 'print' 中去。
+    let print = || println!("{}", x);
+    my_apply(print);
+    //endregion
 
+    //region 9.2.4.输入函数
+    println!("\n\n=====9.2.4.输入函数=====");
+    // 既然闭包可以作为参数，很可能想知道函数是否也可以呢？
+    // 确实可以！！！
+    // 如果声明一个接受闭包作为参数的函数，那么任何满足该闭包的 trait 约束的函数都可以作为其参数
 
+    // 定义一个函数，可以接受一个由 'Fn' 限定的泛型 'F' 参数并调用它。
+    fn call_me<F: Fn()>(f: F) {
+        f()
+    }
+    // 定义一个满足 'Fn' 约束的封闭函数 (wrapper function)。
+    fn my_function() {
+        println!("I'm a function");
+    }
 
+    // 定义一个满足 'Fn' 约束的闭包。
+    let closure = || println!("I'm a closure!");
+    call_me(closure);
+    call_me(my_function);
+    //endregion
 
+    //region 9.2.5.作为输入参数
+    println!("\n\n=====9.2.5.作为输入参数=====");
+    // 闭包作为输入参数是可能的，所以返回闭包作为输出参数 (output parameter) 也是可能的。
+    // 然而返回闭包类型会有问题，因为目前 Rust 只支持返回具体(非泛型)的类型。
+    // 按照定义，匿名的闭包类型是未知的，所以只有使用 impl Trait 才能返回一个闭包。
+    // 返回闭包的有效特征是： Fn/FnMut/FnOnce
+    // 除此之外，还必须使用 move 关键字，它表明所有的捕获都是通过 值 进行的。这是必须的
+    // 因为在函数退出时，任何通过引用的捕获都会被丢弃，会在闭包中留下无效的引用。
+    fn create_fn() -> impl Fn() {
+        let text = "Fn".to_owned();
+        move || println!("This is a : {}", text)
+    }
+
+    fn create_fnmut() -> impl FnMut() {
+        let text = "FnMut".to_owned();
+        move || println!("This is a : {}", text)
+    }
+    fn create_fnonce() -> impl FnOnce() {
+        let text = "FnOnce".to_owned();
+        move || println!("This is a : {}", text)
+    }
+
+    let fn_plain = create_fn();
+    let mut fn_mut = create_fnmut();
+    let fn_once = create_fnonce();
+    fn_plain();
+    fn_mut();
+    fn_once();
+    //endregion
+
+    //region 9.2.6.1.Iterator::any
+    println!("\n\n=====9.2.6.1.Iterator::any=====");
+    // Iterator::any 是一个函数，若传给它一个迭代器 (Iterator)，当其中任一元素满足谓词(predicate)
+    // 时它将返回 true，否则返回 false。还是直接看例子吧。
+    let vec1 = vec![1, 2, 3];
+    let vec2 = vec![4, 5, 6];
+    // 对 vec 的 'iter()' 举出 '&i32'。通过用 '&x' 匹配，把它解构成 'i32'。
+    // any 方法会自动地把 'vec.iter()' 枚举的迭代器的元素一个个地传给闭包。
+    // 因此，闭包接收到的参数是 '&i32' 类型的。
+    println!("2 in vec1: {}", vec1.iter().any(|&x| x == 2));
+    // 对 vec 的 'into_iter()' 枚举出 'i32' 类型，无需解构。
+    println!("2 in vec2: {}", vec2.into_iter().any(|x| x == 2));
+    // 针对上面的写法，我们平时也只是会使用罢了，但原理，或者说为什么这样写，是一点也不清楚的
+    // 而这个‘知其然而不知其所以然’，正是自己不求其解，从而得不到真正提高的主要原因
+    // 2023年1月30日21时59分40秒
+
+    let array1 = [1, 2, 3];
+    let array2 = [4, 5, 6];
+    // 对数组的 'iter()' 枚举出 '&i32'。
+    println!("2 in array1: {}", array1.iter().any(|&x| x == 2));
+    // 对数组的 'into_iter()' 枚举出 'i32'。
+    println!("2 in array2: {}", array2.into_iter().any(|x| x == 2));
+
+    //endregion
+
+    //region 9.2.6.2.Iterator::find
+    println!("\n\n=====9.2.6.2.Iterator::find=====");
+    // Iterator::find 是一个函数，在传给它一个迭代器时，将用 option 类型返回第一个满足库房的元素。
+    let vec1 = vec![1, 2, 3];
+    let vec2 = vec![4, 5, 6];
+
+    let mut iter = vec1.iter();
+    let mut into_iter = vec2.into_iter();
+
+    // 对迭代器举出的元素的引用是 '&&i32' 类型。解构成 'i32' 类型。
+    // 注意：'find' 方法会把迭代器元素的引用传给闭包。迭代器元素自身是 '&i32' 类型，
+    // 所以传给闭包的是 '&&i32' 类型。
+    println!("Find 2 in vec1: {:?}", iter.find(|&&x| x == 2));
+    println!("Find 2 in vec2: {:?}", into_iter.find(|&x| x == 2));
+
+    let array1 = [1, 2, 3];
+    let array2 = [4, 5, 6];
+
+    println!("Find 2 in array1: {:?}", array1.iter().find(|&&x| x == 2));
+    println!("Find 2 in array2: {:?}", array2.into_iter().find(|&x| x == 2));
+    //endregion
+
+    //region 9.3.高阶函数
+    println!("\n\n=====9.3.高阶函数=====");
+    // Rust 提供了高阶函数 (Higher Order Function,HOF)，指那些输入一个或多个函数，
+    // 并且/或者产生一个更有用的函数的函数。
+    // HOF和惰性(lazy iterator)给Rust带来了函数式(Functional)编程的风格。
+    fn is_odd(n: u32) -> bool {
+        n % 2 == 1
+    }
+    println!("Find the sum of all the squared odd numbers under 1000");
+    let upper = 1000;
+    // 命令式(imperative)写法
+    let mut acc = 0;
+    for n in 0.. {
+        let n_squared = n * n;
+        if n_squared >= upper {
+            break;
+        } else if is_odd(n_squared) {
+            acc += n_squared;
+        }
+    }
+    println!("imperative style: {}", acc);
+
+    // 函数式的写法
+    let sum_of_squared_odd_numbers: u32 =
+        (0..).map(|n| n * n)
+            .take_while(|&n| n < upper)
+            .filter(|&n| is_odd(n))
+            .fold(0, |sum, i| sum + i);
+    println!("functional style: {}", sum_of_squared_odd_numbers);
+    //endregion
+
+    //region 9.4.发散函数
+    println!("\n\n=====9.4.发散函数=====");
+    // 发散函数(diverging function)绝不会返回，使用 ！ 标记，这是一个空类型。
+    fn some_fn() {
+        ()
+    }
+
+    let a: () = some_fn();
+    println!("This function returns and you can see this line.");
+    // 这种类型的主要优点是它可以被转换成为任何其它类型，从而可以在需要精确凿开的地方使用
+    // 例如在 match 匹配分配，例：
+    fn sum_odd_numbers(up_to: u32) -> u32 {
+        let mut acc = 0;
+        for i in 0..up_to {
+            let addition: u32 = match i % 2 == 1 {
+                // i 变量的类型为 u32，这毫无问题
+                true => i,
+                false => continue,
+            };
+            acc += addition;
+        }
+        acc
+    }
+    println!("Sum of odd numbers up to 9(excluding): {}", sum_odd_numbers(9));
+    //endregion
 }
