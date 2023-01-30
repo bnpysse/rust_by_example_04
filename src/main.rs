@@ -153,11 +153,11 @@ fn main() {
     let f = 1.0;
     
     // size_of_val 返回一个变量所占用的字节数
-    println!("size of `x` in bytes: {}", std::mem::size_of_val(&x));
-    println!("size of `y` in bytes: {}", std::mem::size_of_val(&y));
-    println!("size of `z` in bytes: {}", std::mem::size_of_val(&z));
-    println!("size of `i` in bytes: {}", std::mem::size_of_val(&i));
-    println!("size of `f` in bytes: {}", std::mem::size_of_val(&f));
+    println!("size of `x` in bytes: {}", mem::size_of_val(&x));
+    println!("size of `y` in bytes: {}", mem::size_of_val(&y));
+    println!("size of `z` in bytes: {}", mem::size_of_val(&z));
+    println!("size of `i` in bytes: {}", mem::size_of_val(&i));
+    println!("size of `f` in bytes: {}", mem::size_of_val(&f));
     
     // fun(&foo) 用 传引用(pass by reference)的方式把变量传给函数，而非传值
     // (pass by value)，写法是 fun(foo))
@@ -179,7 +179,7 @@ fn main() {
     // 在向量中插入 elem
     vec.push(elem);
     // 哈哈，现在编译器就知道 vec 是 u8 的向量了 (`Vec<u8>`>)。
-    println!("the vec is: {:?}, the size of vec is: {}", vec, std::mem::size_of_val(&vec));
+    println!("the vec is: {:?}, the size of vec is: {}", vec, mem::size_of_val(&vec));
 
     // 5.4.别名
     println!("\n\n=====5.4.别名=====");
@@ -905,7 +905,7 @@ fn main() {
     // 调用函数和闭包
     println!("function: {}", function(i));
     println!("closure_annotated: {}", closure_annotated(i));
-    println!("closure_inferred: {}", closure_inferred(i));
+    println!("closure_inferred: {:?}", closure_inferred(i));
 
     // 没有参数的闭包，返回一个 'i32' 类型
     // 返回类型是自动推导的
@@ -966,7 +966,7 @@ fn main() {
     // 移动到了闭包中。
     let consume = || {
         println!("'movable': {:?}", movable);
-        mem::drop(movable);
+        drop(movable);
     };
     // 'consume' 消耗了该变量，所以该闭包只能调用一次。
     consume();
@@ -1017,7 +1017,7 @@ fn main() {
         farewell.push_str("!!!");
         println!("Then I screamed {}.", farewell);
         println!("Now I can sleep. zzzz");
-        mem::drop(farewell);
+        drop(farewell);
     };
     // 以闭包作为参数，调用函数 'apply'。
     apply(diary);
